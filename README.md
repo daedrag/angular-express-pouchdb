@@ -1,28 +1,42 @@
-# PouchdbLeveldb
+# Angular / Pouchdb / Leveldb
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.4.2.
+An experiment to integrate Pouchdb with Angular. 
 
-## Development server
+This involves running `express-pouchdb` which internally creates LevelDB and exposes a CouchDB-compliant HTTP api so that `pouchdb-browser` can sync via HTTP adapter.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+This opens many opportunities for handling event streaming in Node.js (via express app) and push directly to LevelDB as data source, while pouchdb browser can act as a passive subscribers. This use case is perfectly fit for cross browsers / cross tabs syncing or even Electron based hybrid application.
 
-## Code scaffolding
+### To run express-pouchdb
+```
+cd ./leveldb
+node index.js # this opens express app at localhost:3000
+```
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Note: we need to enable cors.
 
-## Build
+Apart from that, we can specify the location to store LevelDB files and also create multiple PouchDB instances in the same express app. In this case, I create 2 databases at `/db/todos` and `/db/configs`.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
 
-## Running unit tests
+### To run angular
+```
+ng serve
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+At `localhost:4200`, we can see 2 inputs for 2 different PouchDB instances mapped to the 2 express paths like below.
+```
+    this.todoDb = new PouchDB('http://localhost:3000/db/todos/', {
+      ajax: {
+        withCredentials: false
+      }
+    });
+    this.configDb = new PouchDB('http://localhost:3000/db/configs', {
+      ajax: {
+        withCredentials: false
+      }
+    });
+    console.log(this.todoDb.adapter); # will be 'http' (no longer 'idb' or indexed db)
+```
 
-## Running end-to-end tests
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-Before running the tests make sure you are serving the app via `ng serve`.
 
-## Further help
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
